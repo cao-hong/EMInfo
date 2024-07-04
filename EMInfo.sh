@@ -7,9 +7,6 @@
     EMInfo_home=""
     activate=""
     EMInfo_env=""
-    #EMInfo_home="/home/hcao/data_gu02/papers/paper1/package/20240326/EMInfo_use"
-    #activate="/home/hcao/data_gu02/anaconda3/bin/activate"
-    #EMInfo_env="pth2"
 #######################################################################
 
 
