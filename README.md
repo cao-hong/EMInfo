@@ -31,6 +31,7 @@ $\color {red} {Note:}$ Citation of the following references should be included i
 | **environment.yml** | Required packages for Python virtual environment of EMInfo |
 | **interp3d.f90** | Fortran source code for the interpolation of EM grid |
 | **eminfo.py** | Python script of EMInfo |
+| **frn.py** | Pytorch implementation of Filter Response Normalization Layer |
 | **model.py** | Pytorch implementation of 3D UNet++ |
 | **utils.py** | Python utilities |
 </br>
