@@ -118,7 +118,7 @@ By default, the conda environment for EMInfo is named as "eminfo_env", so we set
 
      in_map.mrc:    File name of the input EM density map in MRC2014 format.
 
-     contour:   The contour level of input EM density map file.
+     contour:   The contour level of input EM density map file (0 was used for the simulated maps).
 
 ### Options:
 
