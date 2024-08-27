@@ -12,7 +12,7 @@
 
 <img src='assets/main.jpg' width='800'>
 
-**Copyright (C) 2023 Hong Cao, Jiahua He, Tao Li, Hao Li, Sheng-You Huang and Huazhong University of Science and Technology**
+**Copyright (C) 2023 Hong Cao, Jiahua He, Tao Li, Sheng-You Huang and Huazhong University of Science and Technology**
 
 If you have any questions regarding this program, please don't hesitate to contact us via [huangsy@hust.edu.cn](mailto:huangsy@hust.edu.cn)
 
