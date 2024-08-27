@@ -65,7 +65,7 @@ and install all the required packages automatically using [conda](https://conda.
 
 ### 2. Build the interpolation program "interp3d.f90" as a python package using f2py
 
-:exclamation:The version of $\rm \color{magenta} f2py$ should match the version of Python in EMInfo2's conda environment:
+:exclamation:The version of $\rm \color{magenta} f2py$ should match the version of Python in EMInfo's conda environment:
 
      conda activate eminfo_env
 </br>
