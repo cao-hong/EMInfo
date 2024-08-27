@@ -71,7 +71,7 @@ and install all the required packages automatically using [conda](https://conda.
 
      f2py -c ./interp3d.f90 -m interp3d
 
-This command will generate an ELF file with name like "**interp3d.cpython-\*.so**". Please keep "**interp3d.cpython-\*.so**" with all python scripts in the same directory (the root directory of EMReady2).
+This command will generate an ELF file with name like "**interp3d.cpython-\*.so**". Please keep "**interp3d.cpython-\*.so**" with all python scripts in the same directory (the root directory of EMInfo).
 
 Fortran compiler (e.g.， [gfortran](https://gcc.gnu.org/fortran/), [ifort](https://www.intel.com/content/www/us/en/developer/tools/oneapi/fortran-compiler.html), etc) is required to run $\rm \color{magenta} f2py$. For Linux systems with Debian package management (e.g., Debian, Ubuntu), **gfortran** can be easily installed via:
 
@@ -129,7 +129,7 @@ By default, the conda environment for EMInfo is named as "eminfo_env", so we set
 | -b | Number of input boxes in one batch | 16 |
 | -p | Input the path of pdb file for evaluate | None |
 | --evaluate | Evaluate the F1-score and Q4-accuracy of annotated map | - |
-| --use_cpu | Run EMReady2 on CPU instead of GPU | - |
+| --use_cpu | Run EMInfo on CPU instead of GPU | - |
 
 ### Notes:
 
