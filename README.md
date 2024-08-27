@@ -140,7 +140,7 @@ However, the stride should not be too large, otherwise some inconsistencies amon
 In most cases, the default value (12) is recommended. For larger density maps, a stride value of 24 is a decent choice.
 
 2. By default, EMInfo will run on GPU(s). Users can adjust the batch size according to the available VRAM of their GPU by option $\rm \color{orange} \text{-}b$.
-Empirically, an NVIDIA A100 with 40 GB VRAM can afford a batch size of about 200. 
+Empirically, an NVIDIA A100 with 40 GB VRAM can afford a batch size of about 96. 
 Users can also run EMInfo on the cpu using option $\rm \color{orange} \text{--}use\underline{ }cpu$.
 But this may take extremely long time for large density maps.
 
