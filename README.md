@@ -124,7 +124,7 @@ By default, the conda environment for EMInfo is named as "eminfo_env", so we set
 
 | *Option* | *Description* | *Default* |
 | :---- | :---- | :---- |
-| -f | Select which fold of the EXP model to use. | None |
+| -f | Select which fold of the EXP model to use (None means using all folds). | None |
 | -g | ID(s) of GPU devices to be used, e.g., *0* for GPU #0, and *2,3,6* for GPUs #2, #3, and #6 | 0 |
 | -s | The stride of the sliding window to cut the input map into overlapping boxes | 12 |
 | -b | Number of input boxes in one batch | 16 |
