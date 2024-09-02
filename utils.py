@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import os 
+import os
 import sys
 import mrcfile
 import warnings
@@ -27,7 +27,7 @@ from sklearn.neighbors import BallTree
 
 from interp3d import interp3d
 
-def parse_map(map_path, ignorestart=False, apix=None):
+def parse_map(map_path, ignorestart=False, apix=None, origin_shift=None):
     ### parse_map
     mrc = mrcfile.open(map_path, mode="r")
     map = np.asarray(mrc.data.copy(), dtype=np.float32)
@@ -69,14 +69,18 @@ def parse_map(map_path, ignorestart=False, apix=None):
             assert np.all(voxel_size == target_voxel_size)
         except AssertionError:
             interp3d.del_mapout()
-            interp3d.cubic(map, voxel_size[2], voxel_size[1], voxel_size[0], apix, 0.0, 0.0, 0.0, nxyz[2], nxyz[1], nxyz[0])
+            if origin_shift is not None:
+                interp3d.cubic(map, voxel_size[2], voxel_size[1], voxel_size[0], apix, origin_shift[2], origin_shift[1], origin_shift[0], nxyz[2], nxyz[1], nxyz[0])
+                origin += origin_shift
+            else:
+                interp3d.cubic(map, voxel_size[2], voxel_size[1], voxel_size[0], apix, 0.0, 0.0, 0.0, nxyz[2], nxyz[1], nxyz[0])
             map = interp3d.mapout
             nxyz = np.asarray([interp3d.pextx, interp3d.pexty, interp3d.pextz], dtype=np.int64)
             voxel_size = target_voxel_size
     assert np.all(nxyz == np.asarray([map.shape[2], map.shape[1], map.shape[0]], dtype=np.int64))
 
     return map, origin, nxyz, voxel_size
-   
+
 
 
 def write_map(map_path, map, voxel_size, origin=(0.0, 0.0, 0.0), nxyzstart=(0.0, 0.0, 0.0)):
@@ -213,8 +217,8 @@ def get_zone_map(mapout_all_path, pdb_path, mapout_cx_path, n_classes, r_zone=3.
     # zone box
     atoms = read_atoms(pdb_path)
     coords = atoms - origin    # [N, 3]
-    nxyz_min = np.maximum(np.floor((np.min(coords, axis=0) - r_zone) / voxel_size), 0).astype(np.int64) 
-    nxyz_max = np.minimum(np.ceil((np.max(coords, axis=0) + r_zone) / voxel_size), nxyz).astype(np.int64) 
+    nxyz_min = np.maximum(np.floor((np.min(coords, axis=0) - r_zone) / voxel_size), 0).astype(np.int64)
+    nxyz_max = np.minimum(np.ceil((np.max(coords, axis=0) + r_zone) / voxel_size), nxyz).astype(np.int64)
     assert np.all(nxyz_min < nxyz_max)
     origin += np.multiply(nxyz_min, voxel_size)
     nxyz = nxyz_max - nxyz_min    # map shape after zone box
@@ -259,7 +263,7 @@ def del_out_of_contour(file_name, contour, coords, secstr):
     mapcrs = np.asarray([mrc.header.mapc, mrc.header.mapr, mrc.header.maps], dtype=np.int64)
     mrc.close()
 
-    ### assert that this is a preprocessed map 
+    ### assert that this is a preprocessed map
     assert(np.all(angle == 90.0))
     assert(np.all(mapcrs == np.asarray([1, 2, 3], dtype=np.int64)))
     try:
@@ -278,7 +282,7 @@ def del_out_of_contour(file_name, contour, coords, secstr):
         ncrs = np.asarray([interp3d.pextx, interp3d.pexty, interp3d.pextz], dtype=np.int64)
         voxel_size = target_voxel_size
 
-    ### zone box 
+    ### zone box
     coords_shifted = coords - origin # shift coords
     ncrs_min = np.maximum(np.floor((np.min(coords_shifted, axis=0) - 1) / voxel_size), 0).astype(np.int64)
     ncrs_max = np.minimum(np.ceil((np.max(coords_shifted, axis=0) + 1) / voxel_size), ncrs).astype(np.int64)
@@ -288,7 +292,7 @@ def del_out_of_contour(file_name, contour, coords, secstr):
     data = data[ncrs_min[2] : ncrs_max[2], ncrs_min[1] : ncrs_max[1], ncrs_min[0] : ncrs_max[0]]
     assert(np.all(np.shape(data) == ncrs[::-1])) # impossible
 
-    ### meshgrid 
+    ### meshgrid
     xarray = np.arange(ncrs[0])
     yarray = np.arange(ncrs[1])
     zarray = np.arange(ncrs[2])
@@ -327,7 +331,7 @@ def cleanpdb(pdb_path, repdb_path):
 
 
 def get_SS_type_atoms(pdb_file, targets=None):
-    ### execute STRIDE and parse output 
+    ### execute STRIDE and parse output
     stride = os.popen("tmpdir=$(mktemp -d); cp " + pdb_file + " $tmpdir/tmp.pdb; cd $tmpdir; sed -i 's/HETATM/ATOM  /g' tmp.pdb; stride tmp.pdb; cd -; rm -rf $tmpdir")
     res_name = []
     chain_id = []
@@ -341,7 +345,7 @@ def get_SS_type_atoms(pdb_file, targets=None):
             res_ss.append(line[24:25])
     stride.close()
 
-    ### parse PDB file 
+    ### parse PDB file
     warnings.simplefilter('ignore', BiopythonWarning)
     parser = PDBParser()
     models = parser.get_structure('str', pdb_file)
@@ -388,7 +392,7 @@ def get_SS_type_atoms(pdb_file, targets=None):
                 resseqs.append(resseq)
                 coords.append(atom.get_coord())
                 n_atoms += 1
-        break 
+        break
 
     coords = np.array(coords, dtype='float32')
     secstr = np.array(secstr, dtype='int64')
@@ -455,7 +459,7 @@ def Get_path_according_to_type(map_type, mapout_path, name, fold, model_dir):
     result_path = f"{mapout_path}/{name}_result.txt"
     return model_path, mapout_all_path, mapout_cx_path, npy_all_path, repdb_path, result_path
 
- 
+
 
 if __name__ == "__main__":
     parse_map(map_path="./2O49_SIM6_mod.mrc", apix=1.0)
