@@ -133,7 +133,7 @@ def main():
         if n_gpus > 1:
             model = nn.DataParallel(model)
 
-   
+
     #################################################################################
     ########################### get path according to type ##########################
     #################################################################################
@@ -144,14 +144,14 @@ def main():
 
     #################################################################################
     ################################### load mapin ##################################
-    ################################################################################# 
+    #################################################################################
     print(f"# Load mapin from {mapin_path}", flush=True)
     map, origin, nxyz, voxel_size = parse_map(mapin_path, ignorestart=False, apix=apix)
     try:
         assert np.all(np.abs(np.round(origin / voxel_size) - origin / voxel_size) < 1e-4)
     except AssertionError:
         origin_shift =  ( np.round(origin / voxel_size) - origin / voxel_size ) * voxel_size
-        map, origin, nxyz, voxel_size = parse_map(in_map, ignorestart=False, apix=apix, origin_shift=origin_shift)
+        map, origin, nxyz, voxel_size = parse_map(mapin_path, ignorestart=False, apix=apix, origin_shift=origin_shift)
         assert np.all(np.abs(np.round(origin / voxel_size) - origin / voxel_size) < 1e-4)
     nxyzstart = np.round(origin / voxel_size).astype(np.int64)
     print(f"# Map dimensions = {nxyz}", flush=True)
@@ -208,20 +208,20 @@ def main():
                         X_batch = X[i * batch_size : (i+1) * batch_size]
                         if gpu_id is not None:
                             X_batch = X_batch.cuda()
-        
+
                         Y_pred = model(X_batch)
                         Y_pred = Y_pred.cpu().detach().numpy()
                         boxes_pred_keep[i * batch_size : (i+1) * batch_size] = Y_pred
-        
+
                 boxes_pred = np.zeros( (n_boxes, n_classes, box_size, box_size, box_size), dtype=np.float32 )
                 boxes_pred[keep_indexs] = boxes_pred_keep
                 del boxes_pred_keep
-        
+
                 map_pred = get_map_from_overlapped_boxes(boxes_pred, n_classes, ncx, ncy, ncz, box_size, stride, nxyz)
                 np.save(npy_all_path[index], map_pred)
                 print(f"# The prediction of fold{index+1} is finished", flush=True)
                 del map_pred
-    
+
             map_pred = 0
             for i in range(5):
                 map_pred += np.load(npy_all_path[i])
@@ -231,7 +231,7 @@ def main():
             for i in range(n_classes):
                 write_map(mapout_cx_path[i], np.where(map_pred==i, 1, 0).astype(np.float32), voxel_size, origin=origin)
             print("# End prediction", flush=True)
-            
+
         else:
             print(f"# Load model from {model_path}", flush=True)
             if not use_cpu:
@@ -247,15 +247,15 @@ def main():
                     X_batch = X[i * batch_size : (i+1) * batch_size]
                     if gpu_id is not None:
                         X_batch = X_batch.cuda()
-    
+
                     Y_pred = model(X_batch)
                     Y_pred = Y_pred.cpu().detach().numpy()
                     boxes_pred_keep[i * batch_size : (i+1) * batch_size] = Y_pred
-    
+
             boxes_pred = np.zeros( (n_boxes, n_classes, box_size, box_size, box_size), dtype=np.float32 )
             boxes_pred[keep_indexs] = boxes_pred_keep
             del boxes_pred_keep
-    
+
             map_pred = get_map_from_overlapped_boxes(boxes_pred, n_classes, ncx, ncy, ncz, box_size, stride, nxyz)
             map_pred = np.argmax(map_pred, axis=0)
             map_pred = np.where(map_pred < below_threshold_mask, below_threshold_mask, map_pred)
@@ -273,7 +273,7 @@ def main():
         print(f"The predictions are saved in {result_path}", flush=True)
         coords, secstr = get_SS_type_atoms(repdb_path)
         map_pred, origin, nxyz, _ = parse_map(mapout_all_path, False, apix=apix)
- 
+
         map_pred = map_pred.astype(np.int64)
         predict_grids = np.argwhere(map_pred < n_classes)
         predict_grids = predict_grids[:,::-1] # zyx -> xyz
@@ -287,7 +287,7 @@ def main():
             f.write(f"voxel level evaluation\n")
         tree = BallTree(coords, leaf_size=2)
         distances, indices = tree.query(predict_grids, k=1)
-    
+
         del_indices = []
         ground_trueths = np.zeros(len(predictions), dtype=np.int64)
         for i, index in enumerate(indices):
@@ -296,10 +296,10 @@ def main():
                 del_indices.append(i)
                 continue
             ground_trueths[i] = secstr[index[0]]
-    
+
         ground_trueths = np.delete(ground_trueths, del_indices)
         predictions = np.delete(predictions, del_indices)
-    
+
         n_H = np.sum(np.where(ground_trueths==0,1,0))
         n_S = np.sum(np.where(ground_trueths==1,1,0))
         n_C = np.sum(np.where(ground_trueths==2,1,0))
@@ -307,7 +307,7 @@ def main():
 
         with open(result_path, "a") as f:
             f.write(f"n_H = {n_H}\nn_S = {n_S}\nn_C = {n_C}\nn_N = {n_N}\n")
-    
+
         f1_voxel_classes = []
         num_f1 = [n_H, n_S, n_C, n_N]
         for i in range(n_classes):
@@ -315,9 +315,9 @@ def main():
                 f1_voxel_classes.append(-1)
             else:
                 f1_voxel_classes.append(f1_score(ground_trueths, predictions, labels=[i], average='weighted'))
-    
+
         f1_voxel_weighted = (f1_voxel_classes[0]*n_H + f1_voxel_classes[1]*n_S + f1_voxel_classes[2]*n_C + f1_voxel_classes[3]*n_N) / float(n_H+n_S+n_C+n_N)
-    
+
         ### residue level evaluation
         with open(result_path, "a") as f:
             f.write(f"\nresidue level evaluation\n")
@@ -328,13 +328,13 @@ def main():
         secstr = np.delete(secstr, del_indices)
         secstr_pred = np.delete(secstr_pred, del_indices)
         assert(len(coords) == len(secstr) == len(secstr_pred))
-    
+
         del_indices = del_out_of_contour(mapin_path, contour, coords, secstr) # delete atoms out of contour
         with open(result_path, "a") as f:
             f.write(f"{len(del_indices)} out-of-contour atom(s) is(are) removed from evaluation\n")
         secstr = np.delete(secstr, del_indices)
         secstr_pred = np.delete(secstr_pred, del_indices)
-    
+
         n_H = np.sum(np.where(secstr==0,1,0))
         n_S = np.sum(np.where(secstr==1,1,0))
         n_C = np.sum(np.where(secstr==2,1,0))
@@ -342,17 +342,17 @@ def main():
 
         with open(result_path, "a") as f:
             f.write(f"n_H = {n_H}\nn_S = {n_S}\nn_C = {n_C}\nn_N = {n_N}\n")
-    
+
         q4_accuracy_classes = []
         num_q4 = [n_H, n_S, n_C, n_N]
-    
+
         for i in range(n_classes):
             if num_q4[i] == 0:
                 q4_accuracy_classes.append(-1)
             else:
                 q4_accuracy_classes.append(np.sum(np.where(secstr == i, 1, 0) * np.where(secstr_pred == i, 1, 0) == 1) / np.sum(secstr == i))
         q4_accuracy_weighted = (q4_accuracy_classes[0]*n_H + q4_accuracy_classes[1]*n_S + q4_accuracy_classes[2]*n_C + q4_accuracy_classes[3]*n_N) / float(n_H+n_S+n_C+n_N)
-    
+
         ### write results
         with open(result_path, "a") as f:
             title = ["f1_weight", "f1_Helix", "f1_Sheet", "f1_Coil", "f1_NA",
